@@ -1,5 +1,5 @@
 import { Router } from "express";
-import stripe from "../utils/stripe.js";
+import { getStripe } from "../utils/stripe.js";
 import Booking from "../models/Booking.js";
 import Payment from "../models/Payment.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -15,6 +15,8 @@ router.post("/create-checkout", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "Booking is not accepted yet" });
     }
 
+    const stripe = getStripe();
+    if (!stripe) return res.status(500).json({ error: "Stripe not configured" });
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [

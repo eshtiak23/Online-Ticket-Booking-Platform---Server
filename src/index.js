@@ -4,7 +4,7 @@ import cors from "cors";
 import connectDB, { getDb } from "./config/db.js";
 import { initAuth } from "./auth.js";
 import { toNodeHandler } from "better-auth/node";
-import stripe from "./utils/stripe.js";
+import { getStripe } from "./utils/stripe.js";
 import Booking from "./models/Booking.js";
 import Ticket from "./models/Ticket.js";
 import Payment from "./models/Payment.js";
@@ -28,6 +28,9 @@ app.use(
 
 // Webhook needs raw body — must be before express.json()
 app.post("/api/payments/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  const stripe = getStripe();
+  if (!stripe) return res.status(500).json({ error: "Stripe not configured" });
+
   const sig = req.headers["stripe-signature"];
   let event;
   try {
