@@ -18,6 +18,12 @@ export const initAuth = (db) => {
       },
     },
     trustedOrigins: [process.env.FRONTEND_URL],
+    advanced: {
+      defaultCookieAttributes: {
+        sameSite: "none",
+        secure: true,
+      },
+    },
     user: {
       additionalFields: {
         role: {
