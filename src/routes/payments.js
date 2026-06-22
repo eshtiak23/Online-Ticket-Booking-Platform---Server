@@ -1,8 +1,6 @@
 import { Router } from "express";
-import express from "express";
 import stripe from "../utils/stripe.js";
 import Booking from "../models/Booking.js";
-import Ticket from "../models/Ticket.js";
 import Payment from "../models/Payment.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -42,42 +40,6 @@ router.post("/create-checkout", requireAuth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-router.post("/webhook", express.raw({ type: "application/json" }), async (req, res) => {
-  const sig = req.headers["stripe-signature"];
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    return res.status(400).json({ error: `Webhook Error: ${err.message}` });
-  }
-
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    const bookingId = session.metadata.bookingId;
-    const booking = await Booking.findById(bookingId).populate("ticketId");
-    if (booking) {
-      booking.status = "paid";
-      await booking.save();
-
-      const ticket = await Ticket.findById(booking.ticketId._id);
-      if (ticket) {
-        ticket.quantity -= booking.quantity;
-        await ticket.save();
-      }
-
-      await Payment.create({
-        transactionId: session.id,
-        userId: session.metadata.userId,
-        ticketTitle: booking.ticketId.title,
-        amount: session.amount_total / 100,
-        paymentDate: new Date(),
-      });
-    }
-  }
-
-  res.json({ received: true });
 });
 
 router.get("/history", requireAuth, async (req, res) => {
