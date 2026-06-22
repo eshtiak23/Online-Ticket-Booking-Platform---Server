@@ -9,6 +9,7 @@ import bookingRoutes from "./routes/bookings.js";
 import paymentRoutes from "./routes/payments.js";
 import userRoutes from "./routes/users.js";
 import advertiseRoutes from "./routes/advertise.js";
+import cancelRoutes from "./routes/cancel.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,6 +35,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/advertise", advertiseRoutes);
+app.use("/api/cancel", cancelRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
