@@ -21,9 +21,22 @@ import { sanitizeBody } from "./middleware/sanitize.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL,
+  "https://online-ticket-booking-platform-client-5jm1x1fgu.vercel.app",
+  "https://online-ticket-booking-platform-client-n3ychi2e0.vercel.app",
+  "http://localhost:5173",
+];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
@@ -105,23 +118,6 @@ app.all("/api/auth/*", authLimiter, toNodeHandler(auth));
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
-});
-
-app.post("/api/admin/setup", async (req, res) => {
-  if (req.headers["x-setup-key"] !== process.env.BETTER_AUTH_SECRET) {
-    return res.status(403).json({ error: "Forbidden" });
-  }
-  try {
-    const db = getDb();
-    const result = await db.collection("user").updateOne(
-      { email: req.body.email },
-      { $set: { role: "admin" } }
-    );
-    await User.findOneAndUpdate({ email: req.body.email }, { role: "admin" });
-    res.json({ message: "Done", matched: result.matchedCount });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 });
 
 app.use("/api/tickets", generalLimiter, ticketRoutes);
