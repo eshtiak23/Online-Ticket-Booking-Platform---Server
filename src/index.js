@@ -107,6 +107,23 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+app.post("/api/admin/setup", async (req, res) => {
+  if (req.headers["x-setup-key"] !== process.env.BETTER_AUTH_SECRET) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  try {
+    const db = getDb();
+    const result = await db.collection("user").updateOne(
+      { email: req.body.email },
+      { $set: { role: "admin" } }
+    );
+    await User.findOneAndUpdate({ email: req.body.email }, { role: "admin" });
+    res.json({ message: "Done", matched: result.matchedCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use("/api/tickets", generalLimiter, ticketRoutes);
 app.use("/api/bookings", bookingLimiter, bookingRoutes);
 app.use("/api/payments", generalLimiter, paymentRoutes);

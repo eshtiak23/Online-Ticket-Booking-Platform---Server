@@ -17,7 +17,12 @@ export const initAuth = (db) => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       },
     },
-    trustedOrigins: [process.env.FRONTEND_URL],
+    trustedOrigins: [
+      process.env.FRONTEND_URL,
+      "https://online-ticket-booking-platform-client-5jm1x1fgu.vercel.app",
+      "https://online-ticket-booking-platform-client-n3ychi2e0.vercel.app",
+      "http://localhost:5173",
+    ],
     advanced: {
       defaultCookieAttributes: {
         sameSite: "none",
