@@ -74,17 +74,46 @@ router.get("/:id", requireAuth, async (req, res) => {
   }
 });
 
+const ALLOWED_TICKET_FIELDS = [
+  "title", "from", "to", "transportType", "price",
+  "quantity", "departureDate", "departureTime", "perks", "image",
+];
+
 router.post("/", requireAuth, requireRole("vendor"), async (req, res) => {
   try {
     if (req.dbUser.isFraud) {
       return res.status(403).json({ error: "You are marked as fraud. Cannot add tickets." });
     }
+    const filtered = {};
+    for (const key of ALLOWED_TICKET_FIELDS) {
+      if (req.body[key] !== undefined) filtered[key] = req.body[key];
+    }
     const ticket = await Ticket.create({
-      ...req.body,
+      ...filtered,
       vendorName: req.user.name,
       vendorEmail: req.user.email,
     });
     res.status(201).json(ticket);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/approve/:id", requireAuth, requireRole("admin"), async (req, res) => {
+  try {
+    const ticket = await Ticket.findByIdAndUpdate(req.params.id, { verificationStatus: "approved" }, { new: true });
+    if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+    res.json(ticket);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/reject/:id", requireAuth, requireRole("admin"), async (req, res) => {
+  try {
+    const ticket = await Ticket.findByIdAndUpdate(req.params.id, { verificationStatus: "rejected" }, { new: true });
+    if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+    res.json(ticket);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -97,7 +126,11 @@ router.put("/:id", requireAuth, requireRole("vendor"), async (req, res) => {
     if (ticket.verificationStatus === "rejected") {
       return res.status(403).json({ error: "Cannot update a rejected ticket" });
     }
-    Object.assign(ticket, req.body);
+    const filtered = {};
+    for (const key of ALLOWED_TICKET_FIELDS) {
+      if (req.body[key] !== undefined) filtered[key] = req.body[key];
+    }
+    Object.assign(ticket, filtered);
     await ticket.save();
     res.json(ticket);
   } catch (err) {
@@ -114,24 +147,6 @@ router.delete("/:id", requireAuth, requireRole("vendor"), async (req, res) => {
     }
     await ticket.deleteOne();
     res.json({ message: "Ticket deleted" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.put("/approve/:id", requireAuth, requireRole("admin"), async (req, res) => {
-  try {
-    const ticket = await Ticket.findByIdAndUpdate(req.params.id, { verificationStatus: "approved" }, { new: true });
-    res.json(ticket);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.put("/reject/:id", requireAuth, requireRole("admin"), async (req, res) => {
-  try {
-    const ticket = await Ticket.findByIdAndUpdate(req.params.id, { verificationStatus: "rejected" }, { new: true });
-    res.json(ticket);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

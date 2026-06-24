@@ -7,6 +7,14 @@
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "src/index.js" }
+    {
+      "src": "/api/payments/webhook",
+      "methods": ["POST"],
+      "dest": "src/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "src/index.js"
+    }
   ]
 }
