@@ -44,7 +44,7 @@ export const initAuth = (db) => {
               const existing = await User.findOne({ email: user.email });
               if (!existing) {
                 await User.create({
-                  _id: user.id,
+                  authId: user.id,
                   name: user.name,
                   email: user.email,
                   image: user.image || "",

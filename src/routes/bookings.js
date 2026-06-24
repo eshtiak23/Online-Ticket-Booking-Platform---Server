@@ -16,7 +16,7 @@ router.post("/", requireAuth, async (req, res) => {
     }
 
     const booking = await Booking.create({
-      userId: req.user.id,
+      userId: req.dbUser._id,
       ticketId,
       userEmail: req.user.email,
       userName: req.user.name,
@@ -32,7 +32,7 @@ router.post("/", requireAuth, async (req, res) => {
 
 router.get("/user", requireAuth, async (req, res) => {
   try {
-    const bookings = await Booking.find({ userId: req.user.id })
+    const bookings = await Booking.find({ userId: req.dbUser._id })
       .populate("ticketId")
       .sort({ createdAt: -1 });
     res.json(bookings);

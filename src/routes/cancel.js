@@ -6,7 +6,7 @@ const router = Router();
 
 router.put("/:id", requireAuth, async (req, res) => {
   try {
-    const booking = await Booking.findOne({ _id: req.params.id, userId: req.user.id });
+    const booking = await Booking.findOne({ _id: req.params.id, userId: req.dbUser._id });
     if (!booking) return res.status(404).json({ error: "Booking not found" });
     if (booking.status !== "pending") {
       return res.status(400).json({ error: "Can only cancel pending bookings" });

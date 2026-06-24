@@ -34,7 +34,7 @@ router.post("/create-checkout", requireAuth, async (req, res) => {
       cancel_url: `${process.env.FRONTEND_URL}/dashboard/my-bookings?canceled=true`,
       metadata: {
         bookingId: booking._id.toString(),
-        userId: req.user.id,
+        userId: req.dbUser._id.toString(),
       },
     });
 
@@ -46,7 +46,7 @@ router.post("/create-checkout", requireAuth, async (req, res) => {
 
 router.get("/history", requireAuth, async (req, res) => {
   try {
-    const payments = await Payment.find({ userId: req.user.id }).sort({ paymentDate: -1 });
+    const payments = await Payment.find({ userId: req.dbUser._id }).sort({ paymentDate: -1 });
     res.json(payments);
   } catch (err) {
     res.status(500).json({ error: err.message });

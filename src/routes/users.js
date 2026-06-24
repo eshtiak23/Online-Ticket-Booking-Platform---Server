@@ -9,7 +9,7 @@ router.get("/me", requireAuth, async (req, res) => {
   try {
     res.json({
       user: {
-        id: req.user.id,
+        id: req.dbUser?._id || req.user.id,
         name: req.user.name,
         email: req.user.email,
         image: req.user.image,

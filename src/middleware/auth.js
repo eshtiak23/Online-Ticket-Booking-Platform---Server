@@ -12,7 +12,7 @@ export async function requireAuth(req, res, next) {
     }
     req.user = session.user;
 
-    const dbUser = await User.findById(session.user.id);
+    const dbUser = await User.findOne({ email: session.user.email });
     if (dbUser) {
       req.dbUser = dbUser;
       req.user.role = dbUser.role;

@@ -9,6 +9,7 @@ import { getStripe } from "./utils/stripe.js";
 import Booking from "./models/Booking.js";
 import Ticket from "./models/Ticket.js";
 import Payment from "./models/Payment.js";
+import User from "./models/User.js";
 import ticketRoutes from "./routes/tickets.js";
 import bookingRoutes from "./routes/bookings.js";
 import paymentRoutes from "./routes/payments.js";
@@ -75,13 +76,15 @@ app.post("/api/payments/webhook", express.raw({ type: "application/json" }), asy
 
       const ticket = await Ticket.findById(booking.ticketId._id);
       if (ticket) {
-        ticket.quantity -= booking.quantity;
+        const newQty = ticket.quantity - booking.quantity;
+        ticket.quantity = newQty < 0 ? 0 : newQty;
         await ticket.save();
       }
 
+      const user = await User.findOne({ email: booking.userEmail });
       await Payment.create({
         transactionId: session.id,
-        userId: session.metadata.userId,
+        userId: user?._id || booking.userId,
         ticketTitle: booking.ticketId.title,
         amount: session.amount_total / 100,
         paymentDate: new Date(),
