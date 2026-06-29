@@ -4,7 +4,7 @@
 Backend API for the Online Ticket Booking Platform. Built with Express.js, MongoDB, and BetterAuth for authentication.
 
 ## Live URL
-https://your-server.onrender.com
+https://ticketbari-server-ym3o.onrender.com/
 
 ## Key Features
 - BetterAuth authentication (email/password + Google OAuth)
