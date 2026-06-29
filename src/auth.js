@@ -21,12 +21,13 @@ export const initAuth = (db) => {
       process.env.FRONTEND_URL,
       "https://online-ticket-booking-platform-client-5jm1x1fgu.vercel.app",
       "https://online-ticket-booking-platform-client-n3ychi2e0.vercel.app",
+      "https://online-ticket-booking-platform-clie-sigma.vercel.app",
       "http://localhost:5173",
     ],
     advanced: {
       defaultCookieAttributes: {
-        sameSite: "none",
-        secure: true,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV === "production",
       },
     },
     user: {
