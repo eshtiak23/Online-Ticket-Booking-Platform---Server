@@ -84,7 +84,7 @@ app.post("/api/payments/webhook", express.raw({ type: "application/json" }), asy
     const session = event.data.object;
     const bookingId = session.metadata.bookingId;
     const booking = await Booking.findById(bookingId).populate("ticketId");
-    if (booking) {
+    if (booking && booking.status !== "paid") {
       booking.status = "paid";
       await booking.save();
 

@@ -10,6 +10,9 @@ router.post("/", requireAuth, async (req, res) => {
     const { ticketId, quantity } = req.body;
     const ticket = await Ticket.findById(ticketId);
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+    if (ticket.verificationStatus !== "approved") {
+      return res.status(400).json({ error: "Ticket is not available for booking" });
+    }
 
     if (ticket.quantity < quantity) {
       return res.status(400).json({ error: "Not enough tickets available" });
@@ -61,6 +64,9 @@ router.put("/accept/:id", requireAuth, requireRole("vendor"), async (req, res) =
     if (booking.ticketId.vendorEmail !== req.user.email) {
       return res.status(403).json({ error: "Not your ticket" });
     }
+    if (booking.status !== "pending") {
+      return res.status(400).json({ error: "Booking is not in pending status" });
+    }
     booking.status = "accepted";
     await booking.save();
     res.json(booking);
@@ -75,6 +81,9 @@ router.put("/reject/:id", requireAuth, requireRole("vendor"), async (req, res) =
     if (!booking) return res.status(404).json({ error: "Booking not found" });
     if (booking.ticketId.vendorEmail !== req.user.email) {
       return res.status(403).json({ error: "Not your ticket" });
+    }
+    if (booking.status !== "pending") {
+      return res.status(400).json({ error: "Booking is not in pending status" });
     }
     booking.status = "rejected";
     await booking.save();

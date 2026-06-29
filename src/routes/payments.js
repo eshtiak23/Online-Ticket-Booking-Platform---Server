@@ -11,6 +11,9 @@ router.post("/create-checkout", requireAuth, async (req, res) => {
     const { bookingId } = req.body;
     const booking = await Booking.findById(bookingId).populate("ticketId");
     if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (booking.userId.toString() !== req.dbUser._id.toString()) {
+      return res.status(403).json({ error: "Not your booking" });
+    }
     if (booking.status !== "accepted") {
       return res.status(400).json({ error: "Booking is not accepted yet" });
     }

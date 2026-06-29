@@ -55,6 +55,15 @@ router.get("/advertised", async (req, res) => {
   }
 });
 
+router.get("/all", requireAuth, requireRole("admin"), async (req, res) => {
+  try {
+    const tickets = await Ticket.find().sort({ createdAt: -1 });
+    res.json(tickets);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get("/vendor/all", requireAuth, requireRole("vendor"), async (req, res) => {
   try {
     const tickets = await Ticket.find({ vendorEmail: req.user.email }).sort({ createdAt: -1 });
